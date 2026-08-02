@@ -7,6 +7,27 @@ instead of having to reimplement them.
 This is a separate repo that gets published to a library that AnkiDroid consumes,
 so that AnkiDroid development is possible without a Rust toolchain installed.
 
+## Speedrun fork — what this build ships
+
+This checkout builds `rsdroid-release.aar` from the Speedrun fork of `anki`
+(the `anki` submodule points at the fork commit carrying `SpeedrunService`).
+The `.aar` carries the generated `anki/speedrun/*` classes — `SectionScoresRequest`,
+`SectionScoresResponse`, `Score`, `TopicMastery` — so `SectionScores` is callable
+from Kotlin as `backend.sectionScores(section, tagPrefix, outlineTopicCount)`.
+
+**ABI shipped: `x86_64` only.**
+
+`jni/x86_64/librsdroid.so` is the only native library in the `.aar`. That matches
+the `Medium_Tablet` emulator (`abi.type=x86_64`), which is what the demo runs on.
+Installing `AnkiDroid-play-x86_64-debug.apk` on an emulator works; the
+`armeabi-v7a`, `x86` and `arm64-v8a` split APKs build but contain no `librsdroid.so`
+and will fail at native load time.
+
+`arm64-v8a` — the ABI needed for a physical Android phone — is **cut #1**: it is
+deliberately not built. Adding it means a second `cargo` target
+(`aarch64-linux-android`) and a second full Rust compile; nothing about the
+Speedrun code is architecture-specific, so the cut costs build time, not evidence.
+
 ## Prerequisites
 
 We assume you already have Android Studio, and are able to build the AnkiDroid
